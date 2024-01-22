@@ -47,3 +47,9 @@ npm install @fontsource/montserrat
 # eliminiamo i file inutili al termine le cartelle dovrebbero essere così:
 
 npm run dev -- --port 8000
+
+# creazione router.js
+import { createRouter, createWebHistory } from "vue-router";
+
+# rotta di fallback
+path: "/:pathMatch(.*)*"
