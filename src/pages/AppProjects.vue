@@ -5,8 +5,18 @@
             <div class="col-12 col-md-4 col-lg-3" v-for="project in store.projects" :key="project.id">
                 <ProjectCard :project="project" />
             </div>
-            <button @click="nextPage()" :disabled="currentPage === 4 ? true : false">Avanti</button>
-            <button @click="previousPage()" :disabled="currentPage === 1 ? true : false">Indietro</button>
+            <select name="category" id="category" v-model="selectedCategory" @change="getAllProjects(currentPage)">
+                <option value="">Tutte</option>
+                <option v-for="category in store.categories" :value="category.id">{{ category.name }}</option>
+            </select>
+            <button @click="getAllProjects(currentPage + 1)"
+                :disabled="currentPage === lastPage ? true : false">Avanti</button>
+            <ul class="d-flex">
+                <li v-for="n in lastPage">
+                    <button @click="getAllProjects(n)">{{ n }}</button>
+                </li>
+            </ul>
+            <button @click="getAllProjects(currentPage - 1)" :disabled="currentPage === 1 ? true : false">Indietro</button>
         </div>
     </main>
 </template>
@@ -21,34 +31,55 @@ export default {
         return {
             store,
             currentPage: 1,
-            lastPage: 0
+            lastPage: 0,
+            selectedCategory: ''
         }
     },
     components: {
         ProjectCard
     },
     methods: {
-        getAllProjects() {
-            axios.get(this.store.apiUrl + "/projects", { params: { page: this.currentPage } }).then((res) => {
-                console.log(res.data);
-                this.store.projects = res.data.results.data;
-                this.currentPage = res.data.results.current_page;
-                this.lastPage = res.data.results.last_page
-            })
+        getAllProjects(n) {
+            if (this.selectedCategory === '') {
+                axios.get(this.store.apiUrl + "/projects", { params: { page: n } }).then((res) => {
+                    console.log(res.data);
+                    this.store.projects = res.data.results.data;
+                    this.currentPage = res.data.results.current_page;
+                    this.lastPage = res.data.results.last_page
+                })
+            } else {
+                this.currentPage = 1;
+                axios.get(this.store.apiUrl + "/projects", { params: { page: n, category_id: this.selectedCategory } }).then((res) => {
+                    console.log(res.data);
+                    this.store.projects = res.data.results.data
+                    this.currentPage = res.data.results.current_page
+                    this.lastPage = res.data.results.last_page
+                })
+            }
+
         },
-        nextPage() {
-            this.currentPage += 1;
-            this.getAllProjects();
-        },
-        previousPage() {
-            this.currentPage -= 1;
-            this.getAllProjects();
+        getAllCategories() {
+            if (this.store.categories.length < 1) {
+                axios.get(this.store.apiUrl + "/categories").then((res => {
+                    //console.log(res.data);
+                    this.store.categories = res.data.results;
+                    console.log(this.store.categories);
+                }))
+            } else {
+                return
+            }
+
         }
     },
     mounted() {
-        this.getAllProjects()
+        this.getAllProjects(this.currentPage)
+        this.getAllCategories();
     }
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+ul {
+    list-style: none;
+}
+</style>

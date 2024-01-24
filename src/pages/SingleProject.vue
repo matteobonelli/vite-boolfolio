@@ -15,6 +15,10 @@
                 }}</div>
             </div>
         </div>
+        <router-link :to="{ name: 'single-project', params: { slug: 'boolzapp' } }">
+            Ciao
+        </router-link>
+
 
     </div>
 </template>
@@ -31,12 +35,13 @@ export default {
         }
     },
     methods: {
-        getPostData() {
+        getProjectData() {
             console.log(this.$route);
             axios.get(`${this.store.apiUrl}/projects/${this.$route.params.slug}`).then((res) => {
                 console.log(res.data)
                 if (res.data.results) {
                     this.project = res.data.results
+                    console.log(this.project.id)
                 } else {
                     this.$router.push({ name: "not-found" })
                 }
@@ -44,9 +49,26 @@ export default {
             })
         }
     },
+    mounted() {
+        this.$watch(() => this.$route.params, (toParams, previousParams) => {
+            if (toParams !== previousParams) {
+                this.getProjectData();
+            }
+        }
+        )
+    },
+    // watch: {
+    //     '$route.params.slug': function (newSlug, oldSlug) {
+    //         // Controlla se lo slug è cambiato e aggiorna il componente
+    //         if (newSlug !== oldSlug) {
+    //             this.getProjectData();
+    //         }
+    //     }
+    // },
+
     created() {
-        this.getPostData();
-    }
+        this.getProjectData();
+    },
 }
 </script>
 
